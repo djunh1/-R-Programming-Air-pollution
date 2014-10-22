@@ -1,0 +1,91 @@
+---
+title: "R programming project 1"
+author: "Doug Jacobson"
+date: "Monday, October 20, 2014"
+output: html_document
+---
+
+This program will read in pollution monitoring data for fine particulate matter (PM) at 332 locations within the USA.  Each file contains data for a single monitor.  
+
+This function performs the following:
+-Reads in a specified range of data sets ( 1:10 is data sets 1 through 10) from the working directory. 
+-Will return the mean value of the selected pollutant; "sulfate", or "nitrates" may be used.  Empty values shall be excluded.
+
+```{r}
+#setwd(paste(getwd(),directory, sep="/"))
+setwd("C:/Users/gongshow/Documents/R Projects/Coursera Projects/R Programming/specdata")
+pollutantmean=function(pollutant, id = 1:332){
+        
+        
+        lp= data.frame()
+        files_list<- list.files(, full.names=TRUE, pattern="*.csv")
+        listcsv = dir(pattern = "*.csv")  
+        
+        for(i in id){
+          lp= rbind(lp, read.csv(listcsv[i], header=TRUE))  
+        }
+        
+        if(pollutant == "sulfate"){
+           sulfmean=mean(lp[ ,2], na.rm=TRUE)
+           return(sulfmean)
+         }
+        
+        if(pollutant == "nitrate"){
+           nitratemean=mean(lp[ ,3], na.rm=TRUE)
+           return(nitratemean)
+         }
+}
+```
+
+
+This function reports the number of observed cases in each data file.  It will return a vector with the number of observed cases along with the identifier (ID) of the data being taken.
+
+```{r}
+complete = function(id= 1:332){
+          #setwd(paste(getwd(),directory, sep="/"))
+        setwd("C:/Users/gongshow/Documents/R Projects/Coursera Projects/R Programming/specdata")
+        nobs=data.frame()
+        x=list()
+        idNum=list()
+        listcsv = dir(pattern = "*.csv")  
+        for(i in seq_along(id)){
+          lp= data.frame()
+          lp= read.csv(listcsv[id[i]], header=TRUE)     
+          x[i]=sum(!is.na(lp[, "sulfate"] &lp[ , "nitrate"] ))        
+          idNum[i]=lp[ ,4]
+          rm(lp)          
+          }
+          lst=rbind(idNum, x)
+          nobs=data.frame(t(lst))
+          return(nobs)
+        }
+```
+
+This function looks at each ID station and will only return a correlation between nitrates and sulfates if a threshold of data samples is taken.  For example, a correlation is taken only if 100 samples have been measured at the site ID.  This function will look at all data files with the .csv extension in the working directory.  
+
+```{r}
+corr=function(threshold){
+        
+        setwd("C:/Users/gongshow/Documents/R Projects/Coursera Projects/R Programming/specdata")       
+        lp=data.frame()
+        threshCheck=vector()
+        cr=vector()
+        listcsv = dir(pattern = "*.csv") 
+        k=1
+        for(i in 1:332){
+        threshCheck[i]= complete(i)[ , 2]
+                if(threshCheck[i] > threshold) {
+                        lp= na.omit(read.csv(listcsv[i], header=TRUE))
+                        cr[k]=cor(lp[ ,2], lp[ ,3])
+                        k=k+1
+                      
+                }
+                                
+        }
+      return(cr)       
+}
+
+
+
+
+```
